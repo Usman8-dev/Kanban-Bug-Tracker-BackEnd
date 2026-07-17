@@ -1,0 +1,30 @@
+{
+  "name": "kanban-bug-tracker-backend",
+  "version": "1.0.0",
+  "description": "this is kanban bug tracker for backend",
+  "keywords": [
+    "bug",
+    "tracker"
+  ],
+  "license": "ISC",
+  "author": "Usman",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "config": "^4.4.2",
+    "cookie-parser": "^1.4.7",
+    "crypto": "^1.0.1",
+    "date-fns": "^4.4.0",
+    "debug": "^4.4.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.4",
+    "nodemon": "^3.1.14"
+  }
+}
