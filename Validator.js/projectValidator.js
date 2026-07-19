@@ -10,7 +10,4 @@ exports.Create_Project_validator = [
         .optional({ checkFalsy: true })
         .isLength({ max: 500 }).withMessage('Description cannot exceed 500 characters'),
         
-    body('createdBy')
-        .trim()
-        .notEmpty().withMessage('Creator ID is required')
 ];

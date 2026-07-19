@@ -36,4 +36,71 @@ const ShowAllProject = async(req, res) =>{
     })
   }
 }
-module.exports = { Create , ShowAllProject};
+
+const Update = async (req, res) =>{
+  try {
+     const { id } = req.params; // Get project ID from URL
+    let { name, description } = req.body;
+
+    // Find project, verify ownership, and update it
+    const updatedProj = await ProjectModel.findOneAndUpdate(
+      { _id: id, createdBy: req.user.id }, // Security: Only the creator can update it
+      { name, description },
+      { new: true} 
+    );
+
+    if (!updatedProj) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found or you are not authorized to update it",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Project Updated Successfully",
+      project: updatedProj,
+    });
+  } catch (error) {
+    
+  }
+}
+
+const Search = async (req, res) => {
+  try {
+    let findTitle = await ProjectModel.find({
+      createdBy: req.user.id,
+      name: {
+        $regex: new RegExp(req.params.name, "i")
+      }
+    });
+
+     if (findTitle.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No matching projects found!',
+      });
+    }
+
+    if (!findTitle) {
+      return res.status(401).json({
+        success: false,
+        message: 'Project not found!!',
+      })
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Project Founded Successfully",
+      Expense: findTitle,
+    });
+  } catch (err) {
+    return res.status(201).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+
+module.exports = { Create , ShowAllProject, Update, Search};
