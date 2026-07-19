@@ -20,4 +20,20 @@ const Create = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-module.exports = { Create };
+
+const ShowAllProject = async(req, res) =>{
+   try {
+    let allProject = await ProjectModel.find({ createdBy: req.user.id }).sort({ date: -1 });
+    return res.status(201).json({
+      success: true,
+      message: "All Projects",
+      All_Expenses: allProject,
+    });
+
+  } catch (err) {
+    return res.status(401).json({
+      err: err.message,
+    })
+  }
+}
+module.exports = { Create , ShowAllProject};
