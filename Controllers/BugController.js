@@ -44,8 +44,8 @@ const ShowAllBug = async (req, res) => {
   }
 };
 
-const Update = async (req , res) => {
- try {
+const Update = async (req, res) => {
+  try {
     const bug = await BugModel.findById(req.params.id);
 
     if (!bug) {
@@ -65,7 +65,8 @@ const Update = async (req , res) => {
 
     if (isReporter) {
       // Reporter/lead can edit the entire form
-      const { title, description, status, priority, projectId, assignedTo } = req.body;
+      const { title, description, status, priority, projectId, assignedTo } =
+        req.body;
       if (title !== undefined) bug.title = title;
       if (description !== undefined) bug.description = description;
       if (status !== undefined) bug.status = status;
@@ -88,5 +89,31 @@ const Update = async (req , res) => {
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
-} 
-module.exports = { Create, ShowAllBug, Update };
+};
+
+const Search = async (req, res) => {
+  try {
+    const { query } = req.query; // e.g. /search?query=login
+
+    const filter = {
+      $and: [
+        { $or: [{ assignedBy: req.user.id }, { assignedTo: req.user.id }] },
+        {
+          $or: [{ title: { $regex: new RegExp(req.params.title, "i") } }],
+        },
+      ],
+    };
+
+    const bugs = await BugModel.find(filter).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Search Results",
+      bugs,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { Create, ShowAllBug, Update, Search };
