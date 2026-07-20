@@ -27,7 +27,7 @@ const ShowAllProject = async(req, res) =>{
     return res.status(201).json({
       success: true,
       message: "All Projects",
-      All_Expenses: allProject,
+      All_Project: allProject,
     });
 
   } catch (err) {
