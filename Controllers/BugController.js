@@ -43,4 +43,50 @@ const ShowAllBug = async (req, res) => {
     });
   }
 };
-module.exports = { Create, ShowAllBug };
+
+const Update = async (req , res) => {
+ try {
+    const bug = await BugModel.findById(req.params.id);
+
+    if (!bug) {
+      return res.status(404).json({ success: false, message: "Bug not found" });
+    }
+
+    const userId = req.user.id;
+    const isReporter = bug.assignedBy?.toString() === userId;
+    const isAssignee = bug.assignedTo?.toString() === userId;
+
+    if (!isReporter && !isAssignee) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this bug",
+      });
+    }
+
+    if (isReporter) {
+      // Reporter/lead can edit the entire form
+      const { title, description, status, priority, projectId, assignedTo } = req.body;
+      if (title !== undefined) bug.title = title;
+      if (description !== undefined) bug.description = description;
+      if (status !== undefined) bug.status = status;
+      if (priority !== undefined) bug.priority = priority;
+      if (projectId !== undefined) bug.projectId = projectId;
+      if (assignedTo !== undefined) bug.assignedTo = assignedTo;
+    } else if (isAssignee) {
+      // Assignee can only change status
+      const { status } = req.body;
+      if (status !== undefined) bug.status = status;
+    }
+
+    const updatedBug = await bug.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Bug Updated Successfully",
+      bug: updatedBug,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+} 
+module.exports = { Create, ShowAllBug, Update };
