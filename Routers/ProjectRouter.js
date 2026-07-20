@@ -5,6 +5,7 @@ const {
     ShowAllProject,
     Update,
     Search,
+    Delete,
 } = require("../Controllers/ProjectController");
 const { IsLoginUser } = require("../Middlewares/IsLoginUser_Middleware");
 const {
@@ -19,6 +20,6 @@ router.post("/create", IsLoginUser, Create_Project_validator, validate, Create);
 router.put("/update/:id", IsLoginUser, Create_Project_validator, validate, Update);
 router.get("/AllProject", IsLoginUser, ShowAllProject);
 router.get('/SearchProject/:name',IsLoginUser,Search );
-// router.delete('/delete/:id');
+router.delete('/delete/:id', IsLoginUser, Delete);
 
 module.exports = router;

@@ -102,5 +102,26 @@ const Search = async (req, res) => {
   }
 }
 
+const Delete = async (req, res) => {
+  try {
+    let deleteProject = await ProjectModel.findByIdAndDelete(req.params.id);
 
-module.exports = { Create , ShowAllProject, Update, Search};
+    if (!deleteProject) {
+      return res.status(201).json({
+        success: true,
+        message: "Not found!",
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Deleted Successfully",
+      Expense: deleteProject,
+    });
+  } catch (err) {
+    res.send(err.message);
+  }
+}
+
+
+module.exports = { Create , ShowAllProject, Update, Search, Delete};
