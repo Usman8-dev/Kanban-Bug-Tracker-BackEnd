@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 const app = express();
 const devenv = require('dotenv').config();
 const cookieParser = require('cookie-parser');
@@ -16,7 +17,7 @@ const userRouter = require('./Routers/UserRouter')
 const projectRouter = require('./Routers/ProjectRouter');
 const bugRouter = require('./Routers/BugRouter')
 
-
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());                    
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
