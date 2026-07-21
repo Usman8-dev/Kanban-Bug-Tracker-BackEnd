@@ -60,7 +60,7 @@ const LoginUser =  async (req, res) => {
         if (!finduserLogin) {
             return res.status(401).json({
                 success: false,
-                message: "Email or Password is Invalid...",
+                message: "Email or Password is Invalid",
             });
         } else {
             bcrypt.compare(password, finduserLogin.password, function (err, result) {
@@ -72,6 +72,7 @@ const LoginUser =  async (req, res) => {
                         success: true,
                         message: "Login successfully",
                         user: finduserLogin,
+                        token: token,
                     });
                 } else {
                     return res.status(401).json({
