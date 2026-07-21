@@ -13,7 +13,8 @@ const RegisterUser = async (req, res) => {
         // if use check
         let finduser = await UserModel.findOne({ email: email });
         if (finduser) {
-            return res.status(201).json({
+            // return res.status(201).json({
+             return res.status(409).json({
                 success: false,
                 message: "Your Account Already Register. Please login!!!",
             });
@@ -59,7 +60,7 @@ const LoginUser =  async (req, res) => {
         if (!finduserLogin) {
             return res.status(401).json({
                 success: false,
-                message: "Email or Password is Invalid",
+                message: "Email or Password is Invalid...",
             });
         } else {
             bcrypt.compare(password, finduserLogin.password, function (err, result) {
