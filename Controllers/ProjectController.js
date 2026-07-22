@@ -21,33 +21,48 @@ const Create = async (req, res) => {
   }
 };
 
-const ShowAllProject = async(req, res) =>{
-   try {
-    let allProject = await ProjectModel.find({ createdBy: req.user.id }).sort({createdAt: -1});
+const ShowAllProject = async (req, res) => {
+  try {
+    let allProject = await ProjectModel.find({ createdBy: req.user.id }).sort({
+      createdAt: -1,
+    });
     return res.status(200).json({
       success: true,
       message: "All Projects",
       All_Project: allProject,
     });
-
   } catch (err) {
-    return res.status(500 ).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
-    })
+    });
   }
-}
+};
 
-const Update = async (req, res) =>{
+const ShowSingle = async (req, res) => {
   try {
-     const { id } = req.params; // Get project ID from URL
+    const project = await ProjectModel.findById(req.params.id);
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+    return res.status(200).json({ success: true, project });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const Update = async (req, res) => {
+  try {
+    const { id } = req.params; // Get project ID from URL
     let { name, description } = req.body;
 
     // Find project, verify ownership, and update it
     const updatedProj = await ProjectModel.findOneAndUpdate(
       { _id: id, createdBy: req.user.id }, // Security: Only the creator can update it
       { name, description },
-      { new: true} 
+      { new: true },
     );
 
     if (!updatedProj) {
@@ -65,29 +80,29 @@ const Update = async (req, res) =>{
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 const Search = async (req, res) => {
   try {
     let findTitle = await ProjectModel.find({
       createdBy: req.user.id,
       name: {
-        $regex: new RegExp(req.params.name, "i")
-      }
+        $regex: new RegExp(req.params.name, "i"),
+      },
     });
 
-     if (findTitle.length === 0) {
+    if (findTitle.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No matching projects found!',
+        message: "No matching projects found!",
       });
     }
 
     if (!findTitle) {
       return res.status(401).json({
         success: false,
-        message: 'Project not found!!',
-      })
+        message: "Project not found!!",
+      });
     }
 
     return res.status(201).json({
@@ -101,7 +116,7 @@ const Search = async (req, res) => {
       message: err.message,
     });
   }
-}
+};
 
 const Delete = async (req, res) => {
   try {
@@ -122,7 +137,6 @@ const Delete = async (req, res) => {
   } catch (err) {
     res.send(err.message);
   }
-}
+};
 
-
-module.exports = { Create , ShowAllProject, Update, Search, Delete};
+module.exports = { Create, ShowAllProject, Update, Search, Delete, ShowSingle };

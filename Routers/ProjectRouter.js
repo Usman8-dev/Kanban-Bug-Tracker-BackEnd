@@ -6,6 +6,7 @@ const {
     Update,
     Search,
     Delete,
+    ShowSingle,
 } = require("../Controllers/ProjectController");
 const { IsLoginUser } = require("../Middlewares/IsLoginUser_Middleware");
 const {
@@ -18,6 +19,7 @@ router.get("/", function (req, res) {
 });
 router.post("/create", IsLoginUser, Create_Project_validator, validate, Create);
 router.put("/update/:id", IsLoginUser, Create_Project_validator, validate, Update);
+router.get("/show/:id", IsLoginUser, ShowSingle);
 router.get("/AllProject", IsLoginUser, ShowAllProject);
 router.get('/SearchProject/:name',IsLoginUser,Search );
 router.delete('/delete/:id', IsLoginUser, Delete);
