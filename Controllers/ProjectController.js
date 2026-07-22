@@ -23,16 +23,17 @@ const Create = async (req, res) => {
 
 const ShowAllProject = async(req, res) =>{
    try {
-    let allProject = await ProjectModel.find({ createdBy: req.user.id }).sort({ date: -1 });
-    return res.status(201).json({
+    let allProject = await ProjectModel.find({ createdBy: req.user.id }).sort({createdAt: -1});
+    return res.status(200).json({
       success: true,
       message: "All Projects",
       All_Project: allProject,
     });
 
   } catch (err) {
-    return res.status(401).json({
-      err: err.message,
+    return res.status(500 ).json({
+      success: false,
+      message: err.message,
     })
   }
 }

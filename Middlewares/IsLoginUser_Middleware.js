@@ -3,14 +3,20 @@ const cookieParser = require('cookie-parser');
 const UserModel = require('../Models/UserModel');
 
 const IsLoginUser = async (req, res, next) => {
-    if (!req.cookies.token) {
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
             success: false,
-            message: 'Please Try Again.'
+            message: 'Please login to continue.',
         });
-    } else {
+    }
+
+    const token = authHeader.split(' ')[1]; // strip "Bearer " prefix
+
         try {
-            var decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+            var decoded = jwt.verify(token, process.env.JWT_KEY);
             let user = await UserModel.findOne({ email: decoded.email }).select('-password');
 
             if (!user) {
@@ -27,7 +33,7 @@ const IsLoginUser = async (req, res, next) => {
                 message: 'Invalid or expired token. Please login again.'
             });
         }
-    }
+    // }
 }
 
 module.exports = { IsLoginUser };
