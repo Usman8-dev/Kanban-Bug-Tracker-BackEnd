@@ -5,8 +5,8 @@ exports.Create_Bug_validator = [
     .trim()
     .notEmpty()
     .withMessage("Title is required")
-    .isLength({ min: 2, max: 40 })
-    .withMessage("Title must be between 2 and 40 characters"),
+    .isLength({ min: 3})
+    .withMessage("Title must be at least 3 characters"),
 
   body("description")
     .optional({ checkFalsy: true })

@@ -83,6 +83,16 @@ const LoginUser = async (req, res) => {
   }
 };
 
+const GetAllUsers = async (req, res) => {
+  try {
+    const users = await UserModel.find().select("name email");
+    return res.status(200).json({ success: true, users });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 const LogoutUser = async (req, res) => {
   res.cookie("token", "");
   return res.status(201).json({
@@ -91,4 +101,4 @@ const LogoutUser = async (req, res) => {
   });
 };
 
-module.exports = { RegisterUser, LoginUser, LogoutUser };
+module.exports = { RegisterUser, LoginUser, LogoutUser, GetAllUsers };

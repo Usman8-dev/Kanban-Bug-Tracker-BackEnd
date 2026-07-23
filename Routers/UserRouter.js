@@ -4,6 +4,7 @@ const {
   RegisterUser,
   LoginUser,
   LogoutUser,
+  GetAllUsers,
 } = require("../Controllers/AuthController");
 const {
   loginValidator,
@@ -16,6 +17,7 @@ router.get("/", function (req, res) {
 });
 router.post("/register",RegisterValidator, validate, RegisterUser);
 router.post("/login", loginValidator, validate, LoginUser);
+router.get("/alluser", GetAllUsers);
 router.post("/logout", LogoutUser);
 
 module.exports = router;
