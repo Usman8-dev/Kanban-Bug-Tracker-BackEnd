@@ -112,6 +112,38 @@ const Update = async (req, res) => {
   }
 };
 
+const GetOneBug = async (req, res) => {
+  try {
+    const bug = await BugModel.findById(req.params.id)
+      .populate("assignedTo", "name email")
+      .populate("assignedBy", "name email")
+      .populate("projectId", "name");
+
+    if (!bug) {
+      return res.status(404).json({ success: false, message: "Bug not found" });
+    }
+
+    const userId = req.user.id;
+    const isReporter = bug.assignedBy?._id?.toString() === userId;
+    const isAssignee = bug.assignedTo?._id?.toString() === userId;
+
+    if (!isReporter && !isAssignee) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this bug",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      bug,
+      canEditAll: isReporter, // tells the frontend which form mode to render
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const Search = async (req, res) => {
   try {
     const { query } = req.query;
@@ -174,4 +206,5 @@ module.exports = {
   Search,
   Delete,
   ShowBugsByProject,
+  GetOneBug,
 };

@@ -5,7 +5,7 @@ const { IsLoginUser } = require("../Middlewares/IsLoginUser_Middleware");
 
 const { validate } = require("../Middlewares/validate");
 const { Create_Bug_validator } = require("../Validator.js/BugValidator");
-const { Create,ShowAllBug , Update, Search, Delete, ShowBugsByProject} = require("../Controllers/BugController");
+const { Create,ShowAllBug , Update, Search, Delete, ShowBugsByProject, GetOneBug} = require("../Controllers/BugController");
 
 router.get("/", function (req, res) {
     res.send("Bug tracker is running");
@@ -16,5 +16,6 @@ router.get("/AllBugs", IsLoginUser, ShowAllBug);
 router.get('/SearchBug/:title',IsLoginUser,Search );
 router.delete('/delete/:id', IsLoginUser, Delete);
 router.get('/project/:projectId', IsLoginUser, ShowBugsByProject);
+router.get('/getonebug/:id', IsLoginUser, GetOneBug);
 
 module.exports = router;
