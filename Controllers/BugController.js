@@ -30,17 +30,38 @@ const ShowAllBug = async (req, res) => {
     // let allBug = await BugModel.find({ assignedBy: req.user.id }).sort({ date: -1 });
     let allBug = await BugModel.find({
       $or: [{ assignedBy: req.user.id }, { assignedTo: req.user.id }],
-    }).sort({ createdAt: -1 });
+    })
+      .populate("projectId", "name")
+      .populate("assignedBy", "name")
+      .populate("assignedTo", "name")
+      .sort({ createdAt: -1 });
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "All Bugs you Created",
       All_Bugs: allBug,
     });
   } catch (err) {
-    return res.status(401).json({
+    return res.status(500).json({
       err: err.message,
     });
+  }
+};
+
+const ShowBugsByProject = async (req, res) => {
+  try {
+    let bugs = await BugModel.find({ projectId: req.params.projectId })
+      .populate("assignedTo", "name email")
+      .populate("assignedBy", "name email")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Project Bugs",
+      bugs,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -146,4 +167,11 @@ const Delete = async (req, res) => {
   }
 };
 
-module.exports = { Create, ShowAllBug, Update, Search, Delete };
+module.exports = {
+  Create,
+  ShowAllBug,
+  Update,
+  Search,
+  Delete,
+  ShowBugsByProject,
+};
