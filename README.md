@@ -16,7 +16,7 @@ A Node.js + Express + MongoDB REST API powering a Kanban-style bug tracking appl
 ```
 kanban-bug-tracker-backend/
 ├── config/
-│   └── db.js               # MongoDB connection
+│   └── connection-mongoose.js               # MongoDB connection
 ├── models/
 │   ├── UserModel.js
 │   ├── ProjectModel.js
