@@ -29,6 +29,7 @@ const BugModel = mongoose.Schema(
       ref: "project",
       required: true,
     },
+    seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   },
   { timestamps: true },
 );

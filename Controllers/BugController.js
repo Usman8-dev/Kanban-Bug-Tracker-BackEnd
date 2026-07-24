@@ -13,6 +13,7 @@ const Create = async (req, res) => {
       projectId,
       assignedTo,
       assignedBy: req.user.id, // whoever is logged in and filing the bug
+      seenBy: [],
     });
 
     return res.status(201).json({
@@ -27,7 +28,6 @@ const Create = async (req, res) => {
 
 const ShowAllBug = async (req, res) => {
   try {
-    // let allBug = await BugModel.find({ assignedBy: req.user.id }).sort({ date: -1 });
     let allBug = await BugModel.find({
       $or: [{ assignedBy: req.user.id }, { assignedTo: req.user.id }],
     })
@@ -36,14 +36,20 @@ const ShowAllBug = async (req, res) => {
       .populate("assignedTo", "name")
       .sort({ createdAt: -1 });
 
+    const bugsWithSeenStatus = allBug.map((bug) => ({
+      ...bug.toObject(),
+      isUnseen: !bug.seenBy.some((id) => id.toString() === req.user.id),
+    }));
+
     return res.status(200).json({
       success: true,
       message: "All Bugs you Created",
-      All_Bugs: allBug,
+      All_Bugs: bugsWithSeenStatus,
     });
-  } catch (err) {
+  } catch (error) {
     return res.status(500).json({
-      err: err.message,
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -65,6 +71,67 @@ const ShowBugsByProject = async (req, res) => {
   }
 };
 
+// const Update = async (req, res) => {
+//   try {
+//     const bug = await BugModel.findById(req.params.id);
+
+//     if (!bug) {
+//       return res.status(404).json({ success: false, message: "Bug not found" });
+//     }
+
+//     const userId = req.user.id;
+//     const isReporter = bug.assignedBy?.toString() === userId;
+//     const isAssignee = bug.assignedTo?.toString() === userId;
+
+//     if (!isReporter && !isAssignee) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "You are not authorized to update this bug",
+//       });
+//     }
+
+//     if (isReporter) {
+//       // Reporter/lead can edit the entire form
+//       const { title, description, status, priority, projectId, assignedTo } =
+//         req.body;
+//       if (title !== undefined) bug.title = title;
+//       if (description !== undefined) bug.description = description;
+//       if (status !== undefined) bug.status = status;
+//       if (priority !== undefined) bug.priority = priority;
+//       if (projectId !== undefined) bug.projectId = projectId;
+//       if (assignedTo !== undefined) bug.assignedTo = assignedTo;
+
+//        // reporter made the change: keep it seen for them, mark unseen for the assignee
+//       bug.seenBy = bug.seenBy.filter((id) => id.toString() !== bug.assignedTo?.toString());
+//       if (!bug.seenBy.some((id) => id.toString() === userId)) {
+//         bug.seenBy.push(userId);
+//       }
+
+//     } else if (isAssignee) {
+//       // Assignee can only change status
+//       const { status } = req.body;
+//       if (status !== undefined) bug.status = status;
+
+//        // assignee made the change: keep it seen for them, mark unseen for the reporter
+//       bug.seenBy = bug.seenBy.filter((id) => id.toString() !== bug.assignedBy?.toString());
+//       if (!bug.seenBy.some((id) => id.toString() === userId)) {
+//         bug.seenBy.push(userId);
+//       }
+
+//     }
+
+//     const updatedBug = await bug.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Bug Updated Successfully",
+//       bug: updatedBug,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 const Update = async (req, res) => {
   try {
     const bug = await BugModel.findById(req.params.id);
@@ -85,19 +152,36 @@ const Update = async (req, res) => {
     }
 
     if (isReporter) {
-      // Reporter/lead can edit the entire form
-      const { title, description, status, priority, projectId, assignedTo } =
-        req.body;
+      const { title, description, status, priority, projectId, assignedTo } = req.body;
       if (title !== undefined) bug.title = title;
       if (description !== undefined) bug.description = description;
       if (status !== undefined) bug.status = status;
       if (priority !== undefined) bug.priority = priority;
       if (projectId !== undefined) bug.projectId = projectId;
       if (assignedTo !== undefined) bug.assignedTo = assignedTo;
+
+      bug.seenBy = bug.seenBy.filter((id) => id.toString() !== bug.assignedTo?.toString());
+      if (!bug.seenBy.some((id) => id.toString() === userId)) {
+        bug.seenBy.push(userId);
+      }
     } else if (isAssignee) {
-      // Assignee can only change status
       const { status } = req.body;
       if (status !== undefined) bug.status = status;
+
+      bug.seenBy = bug.seenBy.filter((id) => id.toString() !== bug.assignedBy?.toString());
+      if (!bug.seenBy.some((id) => id.toString() === userId)) {
+        bug.seenBy.push(userId);
+      }
+    }
+
+    // Closed bugs are considered seen by everyone involved — nothing left to notify about
+    if (bug.status === "Closed") {
+      const involvedIds = [bug.assignedBy?.toString(), bug.assignedTo?.toString()].filter(Boolean);
+      involvedIds.forEach((id) => {
+        if (!bug.seenBy.some((seenId) => seenId.toString() === id)) {
+          bug.seenBy.push(id);
+        }
+      });
     }
 
     const updatedBug = await bug.save();
@@ -111,7 +195,6 @@ const Update = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-
 const GetOneBug = async (req, res) => {
   try {
     const bug = await BugModel.findById(req.params.id)
@@ -199,6 +282,36 @@ const Delete = async (req, res) => {
   }
 };
 
+const MarkSeen = async (req, res) => {
+  try {
+    const bug = await BugModel.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { seenBy: req.user.id } }, // adds only if not already present
+      { new: true }
+    );
+
+    if (!bug) {
+      return res.status(404).json({ success: false, message: "Bug not found" });
+    }
+
+    return res.status(200).json({ success: true, bug });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const UnreadCount = async (req, res) => {
+  try {
+    const count = await BugModel.countDocuments({
+      $or: [{ assignedBy: req.user.id }, { assignedTo: req.user.id }],
+      seenBy: { $ne: req.user.id },
+    });
+
+    return res.status(200).json({ success: true, count });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   Create,
   ShowAllBug,
@@ -207,4 +320,6 @@ module.exports = {
   Delete,
   ShowBugsByProject,
   GetOneBug,
+   MarkSeen,
+  UnreadCount,
 };
