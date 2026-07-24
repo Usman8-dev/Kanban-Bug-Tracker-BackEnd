@@ -66,7 +66,6 @@ CLIENT_URL=http://localhost:5173
 | name | String | required |
 | email | String | required, unique |
 | password | String | bcrypt hash, excluded from API responses |
-| role | String | `user` \| `admin` (platform-level, not project-level) |
 | createdAt / updatedAt | Date | via `timestamps: true` |
 
 ### Project
