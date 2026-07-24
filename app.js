@@ -26,6 +26,8 @@ app.use('/project', projectRouter);
 app.use('/bug', bugRouter);
 
 
-app.listen(3000, ()=>{
-    console.log('server is running');  
-});
+// app.listen(3000, ()=>{
+//     console.log('server is running');  
+// });
+const PORT = process.env.PORT || 5000; 
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
